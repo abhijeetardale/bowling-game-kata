@@ -142,7 +142,7 @@ class BowlingGameTest extends WordSpec with Matchers {
 
     }
 
-    "return the score after 10th attempt with random combinations" in {
+    "return the score after 10th attempt with random1 combinations" in {
 
       val rollsAllRandom = List(Roll(5,1),Roll(3,7),Roll(7,1),Roll(9,0),Roll(7,1),Roll(9,0),Roll(4,5),Roll(8,1),Roll(10,0),Roll(10,8))
       game.rolling(rollsAllRandom) shouldBe List(6, 23, 31, 40, 48, 57, 66, 75, 103, 121)
@@ -155,6 +155,14 @@ class BowlingGameTest extends WordSpec with Matchers {
       val rollsAllRandom = List(Roll(0,0),Roll(7,2),Roll(0,2),Roll(3,5),Roll(0,0),Roll(0,0),Roll(4,1),Roll(3,3),Roll(0,6),Roll(0,9))
       game.rolling(rollsAllRandom) shouldBe List(0, 9, 11, 19, 19, 19, 24, 30, 36, 45)
       game.getFinalScore(rollsAllRandom) shouldBe List(0, 9, 11, 19, 19, 19, 24, 30, 36, 45)
+
+    }
+
+    "return the score after 10th attempt with random3 combinations" in {
+
+      val rollsAllRandom = List(Roll(9,0),Roll(9,0),Roll(7,3),Roll(7,2),Roll(1,0),Roll(3,0),Roll(7,0),Roll(0,7),Roll(8,2),Roll(9,1))
+      game.rolling(rollsAllRandom) shouldBe List(9, 18, 35, 44, 45, 48, 55, 62, 81, "spare")
+      game.getFinalScore(rollsAllRandom) shouldBe List(9, 18, 35, 44, 45, 48, 55, 62, 81, 91)
 
     }
 

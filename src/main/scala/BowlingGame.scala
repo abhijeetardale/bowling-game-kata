@@ -44,21 +44,21 @@ class BowlingGame {
         val element =  list(i) match {
 
           case currentScore : String if(list.lift(i+1).isDefined && list.lift(i+1).get.isInstanceOf[String]
-                             && list.lift(i+1).get.asInstanceOf[String]== "strike" && currentScore=="strike") =>
+                             && list.lift(i+1).get.asInstanceOf[String]== "strike" && currentScore=="strike") => // consecutive strike .. 10 + next two attempts(strike included) + last score
             list.updated(i, 10 +
-                            rolls(i+1).attempt1 +
-                            (if(rolls.lift(i+2).isDefined){rolls(i+2).attempt1} else {rolls(i+1).attempt2}) +
-                            list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0}))
+                            rolls(i+1).attempt1+
+                            list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0}) +
+                            (if(rolls.lift(i+2).isDefined){rolls(i+2).attempt1} else {rolls(i+1).attempt2}) )
 
-          case currentScore : String if(list.lift(i+1).isDefined) =>
+          case currentScore : String if(list.lift(i+1).isDefined) => // strike or spare case .. if strike, 10 + next two attempts(if strike no second) + last score, if spare 10 + next one attempt + last score
             list.updated(i, 10 +
                             rolls(i+1).attempt1 +
-                            (if(currentScore=="strike") { rolls(i+1).attempt2 } else {0}) +
-                            list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0}))
+                            list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0})+
+                            (if(currentScore=="strike") { rolls(i+1).attempt2 } else {0}) )
 
           case currentScore : String => list.updated(i,currentScore)
 
-          case currentScore : Int =>
+          case currentScore : Int => // normal open frame .. doing addition of two attempts + last core
             list.updated(i, currentScore +
                             list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0}))
         }
@@ -71,6 +71,49 @@ class BowlingGame {
     acc(rollingScore, 0)
   }
 
+  /*def rolling(rolls: List[Roll]): List[Any] = {
+
+    val rollingScore = rolls.map { roll =>
+      roll match{
+        case Roll(10,0, None) => "strike"
+        case Roll(a, b, None) if(a+ b == 10) => "spare"
+        case Roll(a, b, Some(x)) => "bonus"
+        case Roll(x, y, None) => x+y
+      }
+    }
+
+    @tailrec
+    def acc(list: List[Any], i: Int): List[Any] = {
+      if (i == rollingScore.size) {
+        list
+      }
+      else {
+
+        val element =  list(i) match {
+
+          case currentScore : String if(list.lift(i+1).isDefined && list.lift(i+1).get.isInstanceOf[String]
+                             && list.lift(i+1).get.asInstanceOf[String]== "strike" && currentScore=="strike") => // consecutive strike .. 10 + next two attempts(strike included) + last score
+            list.updated(i, updateBonusScore(rolls, list, i) +
+                            (if(rolls.lift(i+2).isDefined){rolls(i+2).attempt1} else {rolls(i+1).attempt2}))
+
+          case currentScore : String if(list.lift(i+1).isDefined) => // strike or spare case .. if strike, 10 + next two attempts(if strike no second) + last score, if spare 10 + next one attempt + last score
+            list.updated(i, updateBonusScore(rolls, list, i) +
+                            (if(currentScore=="strike") { rolls(i+1).attempt2 } else {0}))
+
+          case currentScore : String => list.updated(i,currentScore)
+
+          case currentScore : Int => // normal open frame .. doing addition of two attempts + last core
+            list.updated(i, updateScore(list, i, currentScore))
+        }
+
+        acc(element, i+1)
+
+      }
+    }
+
+    acc(rollingScore, 0)
+  }*/
+
   def getFinalScore(rolls: List[Roll]): List[Any] ={
     val i = rolls.size-1
     val list = rolling(rolls)
@@ -81,44 +124,13 @@ class BowlingGame {
   }
 
 
-    /*@tailrec
-    def acc(list: List[Any], i: Int): List[Any] = {
-      if (i==rollingScore.size) list
-      else {
-        val element =  list(i) match {
-
-          case s : String if(list.lift(i+1).isDefined && list.lift(i+1).get.isInstanceOf[String] && s=="spare") =>
-            list.updated(i, getSpareBonus(rolls, list, i))
-
-          case s : String if(list.lift(i+1).isDefined && list.lift(i+1).get.isInstanceOf[String] && s=="strike") =>
-            list.updated(i, getStrikeBonus(rolls, list, i))
-
-          case s : String if(list.lift(i+1).isDefined && list.lift(i+1).get.isInstanceOf[Int]) =>
-            list.updated(i, getStrikeBonus(rolls, list, i))
-
-          case s : Int =>
-            list.updated(i, s + getLastScore(list, i))
-
-          case s : String => list.updated(i,s)
-        }
-
-        acc(element, i+1)
-
-      }
-    }
-
-    acc(rollingScore, 0)
+  private def updateBonusScore(rolls: List[Roll], list: List[Any], i: Int): Int ={
+    updateScore(list, i, 10) + rolls(i+1).attempt1
   }
 
-  private def getLastScore(list: List[Any], i: Int): Int = {
-    list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0})
+  private def updateScore(list: List[Any], i: Int, currentScore: Int): Int ={
+    currentScore +
+      list.lift(i-1).fold(0)(x=> if(x.isInstanceOf[Int]){x.asInstanceOf[Int]} else{0})
   }
 
-  private def getStrikeBonus(rolls: List[Roll], list: List[Any], i: Int): Int = {
-    getSpareBonus(rolls, list, i)+ rolls(i+1).attempt2
-  }
-
-  private def getSpareBonus(rolls: List[Roll], list: List[Any], i: Int): Int = {
-    10 + rolls(i+1).attempt1 + getLastScore(list, i)
-  }*/
 }
